@@ -1,0 +1,39 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish win-x64 single-file
+        run: >
+          dotnet publish src/Meeseeks/Meeseeks.csproj
+          -c Release -r win-x64 --self-contained
+          -p:PublishSingleFile=true
+          -p:DebugType=embedded
+          -o publish
+
+      - name: Zip
+        run: Compress-Archive -Path publish/Meeseeks.exe -DestinationPath meeseeks-win-x64.zip
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create ${{ github.ref_name }}
+          --title ${{ github.ref_name }}
+          --generate-notes
+          meeseeks-win-x64.zip

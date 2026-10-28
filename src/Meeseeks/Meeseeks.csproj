@@ -10,6 +10,10 @@
 		<AssemblyName>Meeseeks</AssemblyName>
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<TieredPGO>true</TieredPGO>
+		<Version>0.1.0</Version>
+		<Description>A coding-agent harness written in C#, with one general-purpose tool: a C# code runner.</Description>
+		<RepositoryUrl>https://github.com/boucherlfg/meeseeks</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>

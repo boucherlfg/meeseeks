@@ -20,11 +20,24 @@ Nine tools, one permission surface, nine descriptions in the prompt. Everything 
         loopback broker ◀── ▶ child meeseeks ◀── ▶ child meeseeks
 ```
 
+## Install
+
+Download `meeseeks-win-x64.zip` from the [latest release](https://github.com/boucherlfg/meeseeks/releases/latest),
+unzip it, and put `Meeseeks.exe` somewhere on your `PATH`. The binary is self-contained — no .NET SDK or
+runtime needed.
+
+Or build from source:
+
+```sh
+git clone https://github.com/boucherlfg/meeseeks
+cd meeseeks
+dotnet build -c Release
+```
+
 ## Requirements
 
-- .NET SDK 10
 - Ollama running locally (or Ollama Cloud) with a tool-capable model
-- Windows, Linux, or macOS
+- Windows, Linux, or macOS (release binaries are Windows x64; other platforms build from source)
 
 ## Build
 
