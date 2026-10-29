@@ -27,5 +27,9 @@ public interface IModelClient : IDisposable
 /// <summary>Creates the model client configured in provider.json.</summary>
 public static class ModelClientFactory
 {
-	public static IModelClient Create(ProviderConfig config) => new OllamaClient(config);
+	public static IModelClient Create(ProviderConfig config) => config.Provider?.Trim().ToLowerInvariant() switch
+	{
+		"anthropic" => new AnthropicClient(config),
+		_ => new OllamaClient(config),
+	};
 }

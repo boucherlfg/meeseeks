@@ -49,6 +49,9 @@ public sealed class ChatMessage
 	/// <summary>Set on role "tool" messages.</summary>
 	public string? ToolName { get; set; }
 
+	/// <summary>Set on role "tool" messages. Providers that require tool-call ids (Anthropic) echo it back; others ignore it.</summary>
+	public string? ToolCallId { get; set; }
+
 	/// <summary>Images attached to a user message. Sent to the model as Ollama's `images` array.</summary>
 	public List<ImageAttachment>? Images { get; set; }
 }

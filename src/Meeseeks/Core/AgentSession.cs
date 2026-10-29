@@ -132,6 +132,7 @@ public sealed class AgentSession
 						_messages.Add(new ChatMessage
 						{
 							Role = "tool",
+							ToolCallId = call.Id,
 							ToolName = call.Name,
 							Content = $"ERROR: Refusing to run \"{call.Name}\" with arguments already used recently. Change the arguments or the approach.",
 						});
@@ -175,6 +176,7 @@ public sealed class AgentSession
 					_messages.Add(new ChatMessage
 					{
 						Role = "tool",
+						ToolCallId = call.Id,
 						ToolName = call.Name,
 						Content = Truncate(output, 64_000),
 						Images = images is { Count: > 0 } ? [.. images] : null,

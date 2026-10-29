@@ -4,10 +4,13 @@ using System.Text.Json.Serialization;
 namespace Meeseeks.Config;
 
 /// <summary>
-/// All Ollama and harness settings. Stored at ~/.meeseeks/provider.json.
+/// All provider and harness settings. Stored at ~/.meeseeks/provider.json.
 /// </summary>
 public sealed class ProviderConfig
 {
+	/// <summary>Which model backend to use: "ollama" (default) or "anthropic".</summary>
+	public string Provider { get; set; } = "ollama";
+
 	public string BaseUrl { get; set; } = "http://127.0.0.1:11434";
 
 	public string Model { get; set; } = "glm-5.3-flash:cloud";
