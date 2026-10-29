@@ -250,6 +250,7 @@ public static class RootRunner
 					session.Reset(session.SystemPrompt);
 					pending.Clear();
 					conversationId = ConversationStore.NewId();
+					ui.Clear();
 					ui.Info($"new conversation {conversationId}");
 					continue;
 				}
@@ -783,10 +784,12 @@ public static class RootRunner
 
 	private static void ShowTools(ConsoleUi ui, ToolRegistry tools)
 	{
-		foreach (var definition in tools.Definitions)
+		var definitions = tools.Definitions;
+		var width = definitions.Count == 0 ? 0 : definitions.Max(definition => definition.Name.Length) + 2;
+		foreach (var definition in definitions)
 		{
 			var summary = definition.Description.Split('\n')[0].Trim();
-			ui.WriteLine($"{ui.Ansi.Bold(definition.Name)} {ui.Ansi.Dim("—")} {summary}");
+			ui.WriteLine(ui.Ansi.Bold(definition.Name.PadRight(width)) + summary);
 		}
 	}
 

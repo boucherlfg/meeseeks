@@ -8,7 +8,7 @@ public sealed record Skill(string Name, string Description, string Path, string 
 [Api("A discovered skill.")]
 public sealed class SkillInfo
 {
-	[Api("Skill name, for Skills.GetAsync and Skills.RunAsync.", Order = 0)]
+	[Api("Skill name, for the skill tool's get and run actions.", Order = 0)]
 	public string Name { get; set; } = "";
 
 	[Api("What the skill is for.", Order = 1)]
@@ -20,7 +20,7 @@ public sealed class SkillInfo
 	[Api("Skill directory; relative paths in the instructions resolve here.", Order = 3)]
 	public string BaseDir { get; set; } = "";
 
-	[Api("Full instructions with frontmatter removed. Only set by Skills.GetAsync.", Order = 4)]
+	[Api("Full instructions with frontmatter removed. Only set by the skill tool's get action.", Order = 4)]
 	public string? Body { get; set; }
 
 	public override string ToString() => $"{Name}: {Description}";
@@ -91,7 +91,7 @@ public sealed class SkillCatalog
 		var builder = new StringBuilder();
 		builder.AppendLine("## Skills");
 		builder.AppendLine();
-		builder.AppendLine("Skills are packaged instructions. Read one with `Skills.GetAsync(name)` and follow it, or delegate it with `Skills.RunAsync(name, input, options)`. Use a skill when its description matches the task. Relative paths in a skill resolve against its directory.");
+		builder.AppendLine("Skills are packaged instructions. Read one with `skill` (`action: get`) and follow it, or delegate it with `skill` (`action: run`). Use a skill when its description matches the task. Relative paths in a skill resolve against its directory.");
 		builder.AppendLine();
 		foreach (var skill in _skills)
 		{

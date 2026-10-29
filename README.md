@@ -187,21 +187,23 @@ this line". Six tools cover those cases in one call each:
 | --- | --- |
 | `read` | Returns a file with line numbers (`   12→text`). `offset`/`limit` page through large files; binary files and files over 16 MB are refused. |
 | `write` | Creates a file or replaces it whole. Parent directories are created. Replacing an existing file needs `overwrite: true`, so a stale path cannot silently destroy work. |
-| `edit` | Replaces an exact string and reports the diff. `oldText` must match exactly and be unique unless `replaceAll` is true; a failed match names the closest line. |
-| `patch` | Applies several exact-string replacements across one or more files in one call, and reports one diff per file. |
+| `edit` | Applies a standard unified diff to one file and reports the result. Hunks are located by content, so slightly-off line numbers still apply; a failed match names the closest line. |
+| `patch` | Applies a git-style multi-file unified diff in one call, and reports one diff per file. |
 | `glob` | Finds files by pattern. |
 | `grep` | Searches file contents with a regular expression. |
 
-`edit` is the tool for changing an existing file: it touches only the matched text, so the rest of the file —
-including CRLF line endings and a missing trailing newline — is preserved byte for byte. Writes go through a
-temp file and a rename, so a failed write never leaves a half-written file.
+`edit` is the tool for changing an existing file: it takes a standard unified diff (`---`/`+++` headers,
+`@@` hunks, ` `/`-`/`+` lines) and touches only the hunk regions, so the rest of the file — including CRLF
+line endings and a missing trailing newline — is preserved byte for byte. Hunks are located by content: the
+stated line is tried first, then the nearest exact match, then a match ignoring whitespace, so imperfect line
+numbers still apply. Writes go through a temp file and a rename, so a failed write never leaves a half-written
+file.
 
 `patch` is the tool for a change that spans files — a rename, a signature change, its call sites, the tests.
-Each entry in `edits` is `{ path, oldText, newText, replaceAll? }` and follows `edit`'s matching rules. Hunks
-apply in the order given, so a later hunk in the same file can match text an earlier one introduced. The call
-is atomic by default: every hunk is validated first, and if any hunk fails nothing is written and the error
-names the failing hunk with the same closest-line diagnostic. Pass `atomic: false` to apply the hunks that do
-match and report the ones that did not.
+It takes git-style unified diff output, possibly covering several files, in one `diff` string. The call is
+atomic by default: every file section is validated first, and if any section fails nothing is written and the
+error names the failing file. Pass `atomic: false` to apply the sections that do match and report the ones
+that did not.
 
 ## Web tools
 
@@ -387,7 +389,7 @@ return JsonConvert.SerializeObject(new { ok = true });
   `numCtx`.
 - `Tools/CsharpTool.cs` describes the `csharp` tool and hands scripts to `Scripting/ScriptRunner.cs`.
 - `Tools/ToolRegistry.cs` holds the toolbelt: `csharp`, plus `read`, `write`, `edit`, `patch`, `glob`, and `grep` as fast paths for file work and searching.
-- `Tools/ReadTool.cs`, `Tools/WriteTool.cs`, and `Tools/EditTool.cs` read a file with line numbers, create or replace a whole file, and replace an exact string while reporting the diff. `Tools/PatchTool.cs` applies many such replacements across files, validating every hunk before it writes. `Tools/LineDiff.cs` computes the diffs; `Tools/FilePaths.cs` handles path resolution and atomic writes.
+- `Tools/ReadTool.cs`, `Tools/WriteTool.cs`, and `Tools/EditTool.cs` read a file with line numbers, create or replace a whole file, and apply a unified diff to one file. `Tools/PatchTool.cs` applies a git-style multi-file unified diff, validating every file section before it writes. `Tools/UnifiedDiff.cs` parses and applies unified diffs; `Tools/LineDiff.cs` computes the result diffs; `Tools/FilePaths.cs` handles path resolution and atomic writes.
 - `Tools/GlobTool.cs` and `Tools/GrepTool.cs` find files by pattern and search file contents, so a search costs one tool call instead of a script round trip.
 - `Tools/WebSearchTool.cs` posts to the Ollama Cloud web-search API with the `apiKey` from `provider.json`; `Tools/WebFetchTool.cs` fetches a URL and reduces HTML to text. `Tools/WebClient.cs` holds the shared HTTP client, bounded body reader, and HTML-to-text extraction.
 - `ScriptRunner` compiles with Roslyn, injects `ScriptGlobals`, captures `Console`, and keeps the process warm

@@ -11,7 +11,7 @@ namespace Meeseeks.Agents;
 [Api("A message from another agent.")]
 public sealed class AgentMessage
 {
-	[Api("Message id, for example m3. Use it with Agent.ReplyAsync.", Order = 0)]
+	[Api("Message id, for example m3. Use it with the agent tool's reply action.", Order = 0)]
 	public required string Id { get; init; }
 
 	[Api("Sender agent id.", Order = 1)]
@@ -23,7 +23,7 @@ public sealed class AgentMessage
 	[Api("Message text.", Order = 3)]
 	public string Text { get; init; } = "";
 
-	[Api("True when the sender is waiting for Agent.ReplyAsync.", Order = 4)]
+	[Api("True when the sender is waiting for the agent tool's reply action.", Order = 4)]
 	public bool WantReply { get; init; }
 
 	[Api("Set on a reply; the id of the message it answers.", Order = 5)]

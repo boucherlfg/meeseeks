@@ -173,7 +173,7 @@ public sealed class CsharpTool
 		var builder = new StringBuilder();
 
 		builder.AppendLine("""
-			Run a C# script in this meeseeks process. This is the general-purpose tool: scripts are how you run commands, call HTTP APIs, spawn subagents, call MCP tools, and use skills. For file work, `read`, `write`, `edit`, and `patch` are one call each instead of a compile-and-run round trip. Pass a short `purpose` argument with every call; the console shows it while the script runs.
+			Run a C# script in this meeseeks process. This is the general-purpose tool: scripts are how you run commands, call HTTP APIs, and do file, JSON, and text work with the full .NET runtime. For subagents, skills, and MCP tools use the dedicated `agent`, `skill`, and `mcp` tools instead; scripts cannot reach them. For file work, `read`, `write`, `edit`, and `patch` are one call each instead of a compile-and-run round trip. Pass a short `purpose` argument with every call; the console shows it while the script runs.
 
 			The script is compiled with Roslyn as top-level statements, with `await` available. Imported namespaces: System, System.IO, System.Linq, System.Collections.Generic, System.Collections.Concurrent, System.Threading, System.Threading.Tasks, System.Diagnostics, System.Globalization, System.Net, System.Net.Http, System.Net.Http.Json, System.Security.Cryptography, System.Text, System.Text.Json, System.Text.Json.Nodes, System.Text.RegularExpressions, Meeseeks, Meeseeks.Core, Meeseeks.Agents, Meeseeks.Scripting.
 
@@ -203,9 +203,8 @@ public sealed class CsharpTool
 
 			- Use top-level statements. `return <value>;` sets the structured result; a script without a return just reports its output.
 			- Roslyn scripts do not accept `using var x = ...;` declarations. Use a `using (...) { }` block, or a plain variable and call `Dispose()`.
-			- Batch work into one script: read many files, run several commands, or fan out subagents, then print a compact summary. For text changes, prefer `read`, `write`, `edit`, and `patch`.
-			- `Agent.SpawnAsync` / `SpawnManyAsync` wait for children. `StartAsync` children are stopped when the script ends unless you awaited `WaitAsync` or used `Stop`.
-			- Errors thrown by the API are `MeeseeksException`s. Catch them when you want to continue.
+			- Batch work into one script: read many files, run several commands, then print a compact summary. For text changes, prefer `read`, `write`, `edit`, and `patch`.
+			- Errors thrown by the runtime are `MeeseeksException`s. Catch them when you want to continue.
 			- Set the optional `timeoutMs` argument for scripts that may take more than ten minutes.
 			- Always pass a short `purpose` argument (one line, e.g. "read mcp.json"); the console shows it while the script runs.
 			- Final answers may use Markdown. The console renders bold, italic, inline code, code fences, headings, and lists.
@@ -242,32 +241,10 @@ public sealed class CsharpTool
 			```
 
 			```csharp
-			// Fan out and compare
-			var results = await Agent.SpawnManyAsync(new[]
-			{
-			    "Find every place this repo reads files from disk. Reply with paths and line numbers.",
-			    "Find every place this repo writes files. Reply with paths and line numbers.",
-			});
-			foreach (var result in results) Console.WriteLine($"[{result.AgentId}] {result.Text}");
-			```
-
-			```csharp
-			// Talk to a running child
-			var worker = await Agent.StartAsync("Wait with Agent.WaitForMessageAsync(120000), reply to the message, then return done.");
-			await worker.SendAsync("context the child may need");
-			var reply = await worker.AskAsync("Which file owns the retry logic?", 120000);
-			var result = await worker.WaitAsync();
-			return new { reply, result = result.Text };
-			```
-
-			```csharp
-			// Skills and MCP
-			var skill = await Skills.GetAsync("code-review");
-			Print(skill.Body);
-
-			foreach (var server in await Mcp.ServersAsync()) Print(server.Name, server.Transport);
-			var issues = await Mcp.CallAsync("github", "list_issues", new { repo = "acme/app", state = "open" });
-			return issues;
+			// Search and summarize in one script
+			var files = Directory.GetFiles(Session.Cwd, "*.md", SearchOption.AllDirectories);
+			var counts = files.ToDictionary(f => f, f => File.ReadLines(f).Count());
+			return counts.OrderBy(pair => pair.Value).Take(5);
 			```
 			""");
 

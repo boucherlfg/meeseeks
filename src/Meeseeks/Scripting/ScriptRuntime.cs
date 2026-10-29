@@ -60,7 +60,7 @@ public sealed class ScriptRuntime
 		return await Broker.WaitForMessageAsync(timeoutMs, cancellationToken).ConfigureAwait(false);
 	}
 
-	/// <summary>Agents started but never awaited do not outlive the script that started them.</summary>
+	/// <summary>Agents started but never awaited do not outlive the tool call that started them.</summary>
 	public void StopDangling()
 	{
 		foreach (var handle in Handles.Where(handle => !handle.IsCompleted))

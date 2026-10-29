@@ -263,7 +263,7 @@ public sealed class AgentSession
 		{
 			injected++;
 			var hint = message.WantReply
-				? $" Reply with Agent.ReplyAsync(\"{message.Id}\", \"...\")."
+				? $" Reply with the agent tool's reply action (messageId: \"{message.Id}\")."
 				: "";
 			_messages.Add(new ChatMessage
 			{

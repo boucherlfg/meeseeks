@@ -114,14 +114,14 @@ Interactive commands
   /help  /new  /model  /think  /skills  /mcp  /tools  /session  /reload  /exit
 
 The C# tool
-  Every task runs through one tool: `csharp`. Scripts are ordinary .NET with
-  file system, Process, HttpClient, JSON, regex, and the Meeseeks API:
+  Scripts are ordinary .NET with file system, Process, HttpClient, JSON,
+  regex, and cryptography. Subagents, skills, and MCP tools are reached
+  through the dedicated `agent`, `skill`, and `mcp` tools instead.
 
-    Agent.SpawnAsync / StartAsync / SpawnManyAsync / SendAsync / AskAsync / ReplyAsync
-    Skills.ListAsync / GetAsync / RunAsync
-    Mcp.ServersAsync / ToolsAsync / CallAsync
-    Tools.ListAsync / CallAsync
+  Script globals:
+
     Session.Cwd / AgentId / Depth / MaxDepth / Model
+    Print(value) / Print(label, value)
 
   Scripts may load NuGet packages and local assemblies:
 

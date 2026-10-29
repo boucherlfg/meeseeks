@@ -22,7 +22,7 @@ public sealed class WriteTool
 
 			`content` is the complete new file, written as UTF-8 without a BOM; `\n` line endings are kept as given. Overwriting an existing file needs `overwrite: true`; without it the call fails and tells you the file exists, so a stale path cannot silently destroy work. The result reports whether the file was created or replaced, its line count, and a short diff against the previous contents.
 
-			For a small change to an existing file prefer `edit`, which replaces an exact string and leaves the rest of the file untouched.
+			For a small change to an existing file prefer `edit`, which applies a unified diff and leaves the rest of the file untouched.
 			""",
 		Parameters = new JsonObject
 		{

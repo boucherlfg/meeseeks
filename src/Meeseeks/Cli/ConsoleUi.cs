@@ -46,6 +46,30 @@ public sealed class ConsoleUi : IProgressSink
 		}
 	}
 
+	/// <summary>Clear the visible conversation from the terminal.</summary>
+	public void Clear()
+	{
+		if (_ansi.Enabled)
+		{
+			// Clear the whole screen and move the cursor home.
+			Emit("\u001b[2J\u001b[H");
+		}
+		else
+		{
+			try
+			{
+				Console.Clear();
+			}
+			catch
+			{
+				// Not a real console (redirected output); nothing to clear.
+			}
+		}
+
+		_last = '\0';
+		ResetTurn();
+	}
+
 	public void Banner(string model, string cwd)
 	{
 		EmitLine(_ansi.Bold("meeseeks") + _ansi.Dim($"  ·  {cwd}  ·  {model}"));
@@ -156,6 +180,21 @@ public sealed class ConsoleUi : IProgressSink
 			return Label(call, "query") is { } query ? $"  ·  {query}" : "";
 		}
 
+		if (string.Equals(call.Name, "agent", StringComparison.OrdinalIgnoreCase))
+		{
+			return AgentLabel(call);
+		}
+
+		if (string.Equals(call.Name, "skill", StringComparison.OrdinalIgnoreCase))
+		{
+			return SkillLabel(call);
+		}
+
+		if (string.Equals(call.Name, "mcp", StringComparison.OrdinalIgnoreCase))
+		{
+			return McpLabel(call);
+		}
+
 		if (!string.Equals(call.Name, "csharp", StringComparison.OrdinalIgnoreCase))
 		{
 			return "";
@@ -177,6 +216,66 @@ public sealed class ConsoleUi : IProgressSink
 		}
 
 		return "";
+	}
+
+	/// <summary>Summarize an agent call: the action, plus the target or prompt.</summary>
+	private static string AgentLabel(ToolCall call)
+	{
+		var action = Label(call, "action") ?? "";
+		var target = Label(call, "agentId") ?? Label(call, "messageId");
+		if (target is not null)
+		{
+			return $"  ·  {action} {target}";
+		}
+
+		if (Label(call, "prompt") is { } prompt)
+		{
+			return $"  ·  {action} \"{prompt}\"";
+		}
+
+		return action.Length > 0 ? $"  ·  {action}" : "";
+	}
+
+	/// <summary>Summarize a skill call: the action and skill name, or the query.</summary>
+	private static string SkillLabel(ToolCall call)
+	{
+		var action = Label(call, "action") ?? "";
+		if (Label(call, "name") is { } name)
+		{
+			return $"  ·  {action} {name}";
+		}
+
+		if (Label(call, "query") is { } query)
+		{
+			return $"  ·  {action} \"{query}\"";
+		}
+
+		return action.Length > 0 ? $"  ·  {action}" : "";
+	}
+
+	/// <summary>Summarize an mcp call: the action and the server/tool being targeted.</summary>
+	private static string McpLabel(ToolCall call)
+	{
+		var action = Label(call, "action") ?? "";
+		var parts = new List<string>();
+		if (action.Length > 0)
+		{
+			parts.Add(action);
+		}
+		if (Label(call, "server") is { } server)
+		{
+			parts.Add(server);
+		}
+		if (Label(call, "tool") is { } tool)
+		{
+			parts.Add(tool);
+		}
+		if (parts.Count == 0 && Label(call, "name") is { } name)
+		{
+			parts.Add(name);
+		}
+
+		return parts.Count > 0 ? "  ·  " + string.Join(" ", parts) : "";
 	}
 
 	/// <summary>Summarize a glob call: the pattern, and where it searched.</summary>

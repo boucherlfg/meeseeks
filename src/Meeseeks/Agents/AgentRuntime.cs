@@ -324,7 +324,7 @@ public sealed class AgentRuntime : IDisposable
 }
 
 /// <summary>A running child meeseeks process, exposed to scripts.</summary>
-[Api("A running child process returned by Agent.StartAsync. Wait for it, message it, or stop it.")]
+[Api("A running child process (agent tool, start action). Wait for it, message it, or stop it.")]
 public sealed class AgentHandle
 {
 	private readonly Process _process;

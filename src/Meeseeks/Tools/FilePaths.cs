@@ -58,6 +58,24 @@ internal static class FilePaths
 
 		var temp = full + ".meeseeks-tmp";
 		File.WriteAllText(temp, text, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-		File.Move(temp, full, overwrite: true);
+
+		// Windows can transiently deny the replace (antivirus, indexer, or a racing reader).
+		// A short bounded retry turns a spurious UnauthorizedAccessException into a pause.
+		for (var attempt = 0; ; attempt++)
+		{
+			try
+			{
+				File.Move(temp, full, overwrite: true);
+				return;
+			}
+			catch (UnauthorizedAccessException) when (attempt < 4)
+			{
+				Thread.Sleep(10 * (attempt + 1));
+			}
+			catch (IOException) when (attempt < 4)
+			{
+				Thread.Sleep(10 * (attempt + 1));
+			}
+		}
 	}
 }

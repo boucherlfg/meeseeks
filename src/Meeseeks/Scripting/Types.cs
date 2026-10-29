@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace Meeseeks.Scripting;
 
-[Api("Options for Agent.SpawnAsync, StartAsync, SpawnManyAsync, MapAsync, and Skills.RunAsync.")]
+[Api("Options for spawning a child agent (agent tool, options argument).")]
 public sealed class SpawnOptions
 {
 	[Api("Model override as an Ollama model name. Defaults to the parent's model.", Order = 0)]
@@ -61,7 +61,7 @@ public sealed class AgentResult
 	public override string ToString() => Text;
 }
 
-[Api("A running agent returned by Agent.PeersAsync.")]
+[Api("A running agent (agent tool, start action).")]
 public sealed class AgentPeerInfo
 {
 	[Api("Agent id.", Order = 0)]
@@ -77,7 +77,7 @@ public sealed class AgentPeerInfo
 [Api("A configured MCP server.")]
 public sealed class McpServerInfo
 {
-	[Api("Server name as used by the other Mcp methods.", Order = 0)]
+	[Api("Server name as used by the mcp tool.", Order = 0)]
 	public string Name { get; set; } = "";
 
 	[Api("\"stdio\" or \"http\".", Order = 1)]
@@ -95,7 +95,7 @@ public sealed class McpServerInfo
 [Api("One MCP tool.")]
 public sealed class McpToolInfo
 {
-	[Api("Tool name as passed to Mcp.CallAsync.", Order = 0)]
+	[Api("Tool name as passed to the mcp tool.", Order = 0)]
 	public string Name { get; set; } = "";
 
 	[Api("Server that owns the tool.", Order = 1)]
