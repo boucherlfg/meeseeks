@@ -27,7 +27,7 @@ public sealed class AgentTool
 
 			- `spawn` — run one child meeseeks process with a `prompt` and wait for its final text.
 			- `start` — start a child and return immediately with its agent id; later `wait` for it or `send` it messages.
-			- `wait` — wait for a child started with `start` (by `agentId`) and return its final result.
+			- `wait` — wait for a child started with `start` (by `agentId`) and return its final result, or wait for multiple children (by `agentIds` array) and return all results.
 			- `send` — send a `message` to a running agent id, or "*" to broadcast to every other agent.
 			- `broadcast` — send a `message` to every other running agent.
 			- `reply` — answer a message that arrived with a `#id` (`messageId`) and asked for a reply.
@@ -62,7 +62,12 @@ public sealed class AgentTool
 				["agentId"] = new JsonObject
 				{
 					["type"] = "string",
-					["description"] = "Target agent id, e.g. root.1 (wait/send), or * to broadcast (send).",
+					["description"] = "Target agent id, e.g. root.1 (wait single/send), or * to broadcast (send).",
+				},
+				["agentIds"] = new JsonObject
+				{
+					["type"] = "array",
+					["description"] = "Array of agent ids to wait for (wait multiple). Waits for all of them concurrently.",
 				},
 				["message"] = new JsonObject
 				{
@@ -126,10 +131,31 @@ public sealed class AgentTool
 
 			case "wait":
 			{
-				var agentId = RequireAgentId(call, "wait");
-				var completion = Take(agentId)
-					?? throw new MeeseeksException(
-						$"No started child \"{agentId}\" is known here. Only children started by this agent's `agent start` calls can be waited on; use agent peers to list running agents.");
+				// Check if we're waiting for multiple agents
+				if (call.Arguments["agentIds"] is JsonArray agentIdsArray && agentIdsArray.Count > 0)
+				{
+					var agentIds = agentIdsArray
+						.OfType<JsonValue>()
+						.Select(v => v.TryGetValue<string>(out var s) ? s : null)
+						.Where(s => !string.IsNullOrWhiteSpace(s))
+						.Select(s => s!)
+						.ToArray();
+
+					if (agentIds.Length == 0)
+					{
+						throw new MeeseeksException("agent wait with agentIds requires at least one valid agent id in the array.");
+					}
+
+					var completions = TakeMultiple(agentIds);
+					var results = await Task.WhenAll(completions.Values).ConfigureAwait(false);
+					var formatted = string.Join("\n\n---\n\n", results.Select(Format));
+					return new ToolExecutionResult(formatted, false);
+				}
+
+				// Single agent wait
+				var agentId = ToolArgs.Text(call, "agentId")
+					?? throw new MeeseeksException("agent wait requires either \"agentId\" (string) or \"agentIds\" (array).");
+				var completion = Take(agentId);
 				var result = await completion.ConfigureAwait(false);
 				return new ToolExecutionResult(Format(result), false);
 			}
@@ -215,11 +241,35 @@ public sealed class AgentTool
 		return handle;
 	}
 
-	private Task<AgentResult>? Take(string agentId)
+	private Task<AgentResult> Take(string agentId)
 	{
 		lock (_gate)
 		{
-			return _started.TryGetValue(agentId, out var completion) ? completion : null;
+			if (!_started.TryGetValue(agentId, out var completion))
+			{
+				throw new MeeseeksException(
+					$"No started child \"{agentId}\" is known here. Only children started by this agent's `agent start` calls can be waited on; use agent peers to list running agents.");
+			}
+			_started.Remove(agentId);
+			return completion;
+		}
+	}
+
+	private Dictionary<string, Task<AgentResult>> TakeMultiple(string[] agentIds)
+	{
+		lock (_gate)
+		{
+			var completions = new Dictionary<string, Task<AgentResult>>();
+			foreach (var agentId in agentIds)
+			{
+				if (!_started.TryGetValue(agentId, out var completion))
+				{
+					throw new MeeseeksException($"No started child \"{agentId}\" is known here. Only children started by this agent's `agent start` calls can be waited on; use agent peers to list running agents.");
+				}
+				completions[agentId] = completion;
+				_started.Remove(agentId);
+			}
+			return completions;
 		}
 	}
 

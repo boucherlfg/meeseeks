@@ -61,7 +61,7 @@ public static class SystemPrompt
 
 		You can start subagents, and they can message each other and you. All of this goes through the `agent` tool:
 
-		- `agent spawn` runs one child process and waits for its final text. `agent start` starts a child and returns immediately with its agent id; `agent wait` collects its result later. To launch many children, call `start` for each one, then `wait` for each id: they run concurrently while you keep working.
+		- `agent spawn` runs one child process and waits for its final text. `agent start` starts a child and returns immediately with its agent id; `agent wait` collects its result later. To launch many children, call `start` for each one, then `wait` for all of them at once with `agentIds: ["root.1", "root.2"]` or wait for them individually.
 		- `agent send` messages a running agent id (or "*" to broadcast). `agent inbox` blocks until a message arrives; `agent messages` lists what you already received.
 		- Incoming messages are also delivered between model steps as user messages tagged `[message #m3 from root.1]`. When such a message asks a question (`wantReply`), answer it with `agent reply` (`messageId: "m3"`).
 
