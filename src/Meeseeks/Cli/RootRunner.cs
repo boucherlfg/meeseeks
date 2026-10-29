@@ -517,6 +517,9 @@ public static class RootRunner
 			session.AppendMessage(CloneMessage(message));
 		}
 
+		// Show the restored conversation, not just a summary line.
+		ui.ReplayHistory(loaded.Messages);
+
 		// Prefer the model the conversation was saved with, when it still exists.
 		if (loaded.Model.Length > 0 && loaded.Model != config.Model)
 		{

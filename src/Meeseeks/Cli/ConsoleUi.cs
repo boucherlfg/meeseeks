@@ -274,6 +274,76 @@ public sealed class ConsoleUi : IProgressSink
 		EmitLine(_ansi.Dim($"✉ {text}"));
 	}
 
+	/// <summary>
+	/// Render a restored conversation so the visible history matches the resumed one:
+	/// user turns with the prompt marker, assistant text through the Markdown renderer,
+	/// thinking dimmed, and tool calls/results as their usual lines.
+	/// </summary>
+	public void ReplayHistory(IReadOnlyList<ChatMessage> messages)
+	{
+		foreach (var message in messages)
+		{
+			switch (message.Role)
+			{
+				case "system":
+					break;
+
+				case "user":
+					EnsureNewline();
+					Emit(_ansi.BrightCyan("❯ "));
+					_markdown.Reset();
+					foreach (var line in SplitLines(message.Content))
+					{
+						EmitLine(_markdown.RenderLine(line));
+					}
+					break;
+
+				case "assistant":
+					EnsureNewline();
+					if (message.Thinking is { Length: > 0 } thinking)
+					{
+						foreach (var line in SplitLines(thinking))
+						{
+							EmitLine(_ansi.Dim(_ansi.Italic(line)));
+						}
+					}
+					_markdown.Reset();
+					foreach (var line in SplitLines(message.Content))
+					{
+						EmitLine(_markdown.RenderLine(line));
+					}
+					if (message.ToolCalls is { Count: > 0 } calls)
+					{
+						foreach (var call in calls)
+						{
+							EmitLine(_ansi.Yellow($"● {call.Name}{ToolDetail(call)}"));
+						}
+					}
+					break;
+
+				case "tool":
+					EmitLine(_ansi.Green($"✓ {message.ToolName ?? "tool"}"));
+					break;
+			}
+		}
+
+		EnsureNewline();
+		ResetTurn();
+	}
+
+	private static IEnumerable<string> SplitLines(string text)
+	{
+		if (text.Length == 0)
+		{
+			yield break;
+		}
+
+		foreach (var line in text.Split('\n'))
+		{
+			yield return line.TrimEnd('\r');
+		}
+	}
+
 	public void Info(string text)
 	{
 		EnsureNewline();
