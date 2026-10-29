@@ -47,18 +47,15 @@ dotnet build -c Release
 ```
 
 The executable is at `src/Meeseeks/bin/Release/net10.0/Meeseeks.exe` (`.dll` plus `dotnet` elsewhere).
-`meeseeks.cmd` in the repository root runs the Release build, falling back to `dotnet run` when needed.
 
 ```sh
-./meeseeks.cmd "hello"
-# or
 dotnet run --project src/Meeseeks -c Release -- "hello"
 ```
 
 Create the config directories on first use:
 
 ```sh
-./meeseeks.cmd --init
+dotnet run --project src/Meeseeks -c Release -- --init
 ```
 
 ## Configuration
