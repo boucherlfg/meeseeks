@@ -29,7 +29,7 @@ public sealed record ThinkingSupport(IReadOnlyList<string> Values, string? Defau
 }
 
 /// <summary>Streaming Ollama /api/chat client with tool calling.</summary>
-public sealed class OllamaClient : IDisposable
+public sealed class OllamaClient : IModelClient
 {
 	private readonly ProviderConfig _config;
 	private readonly HttpClient _http;

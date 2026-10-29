@@ -48,7 +48,7 @@ public static class ChildRunner
 
 		BrokerClient? broker = null;
 		AgentRuntime? agents = null;
-		OllamaClient? client = null;
+		IModelClient? client = null;
 		TurnResult? turn = null;
 		string? error = null;
 
@@ -92,7 +92,7 @@ public static class ChildRunner
 				Broker = broker,
 			};
 
-			client = new OllamaClient(config);
+			client = ModelClientFactory.Create(config);
 			var tools = new ToolRegistry(runtime, config);
 			var systemPrompt = SystemPrompt.Build(config, agentId, args.Parent, depth, cwd, skills, extra);
 			IProgressSink sink = debug ? new DebugSink() : NullProgressSink.Instance;

@@ -10,7 +10,7 @@ namespace Meeseeks.Core;
 /// <summary>One conversation: system prompt, user turns, tool calls, and usage.</summary>
 public sealed class AgentSession
 {
-	private readonly OllamaClient _client;
+	private readonly IModelClient _client;
 	private readonly ProviderConfig _config;
 	private readonly ToolRegistry _tools;
 	private readonly IProgressSink _sink;
@@ -22,7 +22,7 @@ public sealed class AgentSession
 	private string _systemPrompt;
 
 	public AgentSession(
-		OllamaClient client,
+		IModelClient client,
 		ProviderConfig config,
 		ToolRegistry tools,
 		IProgressSink sink,

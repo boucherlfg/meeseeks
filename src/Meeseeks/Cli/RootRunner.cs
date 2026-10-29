@@ -50,7 +50,7 @@ public static class RootRunner
 		BrokerServer? server = null;
 		BrokerClient? broker = null;
 		AgentRuntime? agents = null;
-		OllamaClient? client = null;
+		IModelClient? client = null;
 
 		try
 		{
@@ -83,7 +83,7 @@ public static class RootRunner
 				Broker = broker,
 			};
 
-			client = new OllamaClient(config);
+			client = ModelClientFactory.Create(config);
 			var tools = new ToolRegistry(runtime, config);
 			var systemPrompt = SystemPrompt.Build(config, "root", null, 0, cwd, skills, extra: null);
 			IProgressSink sink = args.Json ? NullProgressSink.Instance : ui;
@@ -188,7 +188,7 @@ public static class RootRunner
 		McpManager mcp,
 		SkillCatalog skills,
 		string cwd,
-		OllamaClient client,
+		IModelClient client,
 		ToolRegistry tools,
 		string conversationId)
 	{
@@ -536,7 +536,7 @@ public static class RootRunner
 
 	private static async Task HandleModelAsync(
 		ConsoleUi ui,
-		OllamaClient client,
+		IModelClient client,
 		ProviderConfig config,
 		AgentSession session,
 		ScriptRuntime runtime,
@@ -604,7 +604,7 @@ public static class RootRunner
 
 	private static async Task HandleThinkAsync(
 		ConsoleUi ui,
-		OllamaClient client,
+		IModelClient client,
 		ProviderConfig config,
 		string argument)
 	{
